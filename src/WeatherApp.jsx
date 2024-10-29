@@ -118,6 +118,7 @@ const WeatherApp = () => {
   useEffect(() => {
     console.log("execute function in useEffect");
     fetchCurrentWeather();
+    fetchWeatherForecast();
   }, []);
 
   const fetchCurrentWeather = () => {
@@ -137,6 +138,32 @@ const WeatherApp = () => {
           windSpeed: weatherElements.WindSpeed,
           humid: weatherElements.RelativeHumidity,
         }));
+      });
+  };
+
+  const fetchWeatherForecast = () => {
+    fetch(
+      'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-DE6B03EC-9B1B-4114-A6DB-8E461055FAA6'
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const locationData = data.records.location[0];
+        const weatherElements = locationData.weatherElement.reduce(
+          (neededElements, item) => {
+            if (['Wx', 'PoP', 'CI'].includes(item.elementName)) {
+              neededElements[item.elementName] = item.time[0].parameter;
+            }
+            return neededElements;
+          },
+          {}
+        );
+  
+        setWeatherElement({
+          description: weatherElements.Wx.parameterName,
+          weatherCode: weatherElements.Wx.parameterValue,
+          rainPossibility: weatherElements.PoP.parameterName,
+          comfortability: weatherElements.CI.parameterName,
+        });
       });
   };
 
