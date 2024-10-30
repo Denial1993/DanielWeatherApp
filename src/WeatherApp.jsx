@@ -115,6 +115,19 @@ const WeatherApp = () => {
     humid: 0.88,
   });
 
+  const [weatherElement, setWeatherElement] = useState({
+    observationTime: new Date(),
+    locationName: '',
+    humid: 0,
+    temperature: 0,
+    windSpeed: 0,
+    description: '',
+    weatherCode: 0,
+    rainPossibility: 0,
+    comfortability: '',
+  });
+
+
   useEffect(() => {
     console.log("execute function in useEffect");
     fetchCurrentWeather();
@@ -148,15 +161,11 @@ const WeatherApp = () => {
       .then((response) => response.json())
       .then((data) => {
         const locationData = data.records.location[0];
-        const weatherElements = locationData.weatherElement.reduce(
-          (neededElements, item) => {
-            if (['Wx', 'PoP', 'CI'].includes(item.elementName)) {
-              neededElements[item.elementName] = item.time[0].parameter;
-            }
-            return neededElements;
-          },
-          {}
-        );
+        const weatherElements = {
+          WindSpeed: locationData.WeatherElement.WindSpeed,
+          AirTemperature: locationData.WeatherElement.AirTemperature,
+          RelativeHumidity: locationData.WeatherElement.RelativeHumidity,
+        };
   
         setWeatherElement({
           description: weatherElements.Wx.parameterName,
@@ -174,14 +183,14 @@ const WeatherApp = () => {
       <WeatherCard>
         <Location>{currentWeather.locationName}</Location>
         <Description>
-          {new Intl.DateTimeFormat("zh-TW", {
+          {/* {new Intl.DateTimeFormat("zh-TW", {
             month: "numeric",
             day: "numeric",
             hour: "numeric",
             minute: "numeric",
           }).format(new Date(currentWeather.observationTime))}{" "}
-          {currentWeather.description}
-          {/* {currentWeather.observationTime} */}
+          {currentWeather.description} */}
+          {weatherElement.description}{weatherElement.comfortability}
         </Description>
         <CurrentWeather>
           <Temperature>
@@ -196,9 +205,15 @@ const WeatherApp = () => {
         </AirFlow>
         <Rain>
           <img src={RainIcon} />
-          {Math.round(currentWeather.humid)}%
+          {/* {Math.round(currentWeather.humid)}% */}
+          {Math.round(weatherElement.rainPossibility)}%
         </Rain>
-        <Redo onClick={fetchCurrentWeather}>
+        <Redo 
+        onClick={()=>{
+          fetchCurrentWeather();
+          fetchWeatherForecast();
+        }}
+        >
           最後觀測時間：
           {new Intl.DateTimeFormat("zh-TW", {
             hour: "numeric",
